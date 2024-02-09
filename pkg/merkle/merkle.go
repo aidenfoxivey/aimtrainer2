@@ -8,6 +8,7 @@ package merkle
 
 import (
 	"crypto/sha256"
+	"fmt"
 )
 
 type MerkleTree struct {
@@ -29,24 +30,49 @@ func (n Node) hash() []byte {
 }
 
 // Consume the bytes b of some serialized object, and return a valid Merkle tree.
-// func NewMerkleTree(b []byte) (*MerkleTree, error) {
-// 	t := &MerkleTree{}
-// 	root, leafs, err := buildWithContent(b)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	t.root = root
-// 	t.leaves = leafs
-// 	t.merkleRoot = root.hash()
-// 	return t, nil
-// }
+func NewMerkleTree(data []byte, blockSize int) (*Node, error) {
+	t := &MerkleTree{}
+	if len(data) == 0 {
+		return nil, fmt.Errorf("No data was provided.")
+	}
 
-// func buildWithContent(b []byte) (*Node, []*Node, error) {
+	dataBlocks := splitIntoDataBlocks(data, blockSize)
 
-// }
+	// assign leaves to tree
+	t.leaves = dataBlocks
 
-// chew on bytes and gives us the chunks
+	// TODO: determine why I've init'ed at size of len(dataBlocks)
+	q := make([]*Node, 0, len(dataBlocks))
+
+	// add leaf nodes into queue
+	q = append(q, dataBlocks...)
+
+	for len(q) > 1 {
+		var n1, n2 *Node
+		n1, q = q[0], q[1:]
+		n2, q = q[0], q[1:]
+
+		buff := make([]byte, 0)
+		buff = append(buff, n1.value...)
+		buff = append(buff, n2.value...)
+
+		sum := sha256.Sum256(buff)
+
+		newNode := &Node{n1, n2, nil, sum[:]}
+
+		n1.parent = newNode;
+		n2.parent = newNode;
+		
+		q = append(q, newNode)
+	}
+
+	return q[0], nil
+}
+
+
+
 // -\_(*_*)_/-
+// - Alisya K.
 func splitIntoDataBlocks(b []byte, blockSize int) []*Node {
 	output := make([]*Node, 0)
 
@@ -72,16 +98,9 @@ func Apply(b []byte) uint32 {
 	return 3
 }
 
-// OVERFLOW - watch out
-func add(a []byte, b []byte) []byte {
-	c := make([]byte, len(a))
-	for i := 0; i < len(a); i++ {
-		c[i] = a[i] + b[i]
-	}
-	return c
-}
-
-func recursion(left, right Node) Node {
-	f := sha256.Sum256(add(left.value, right.value))
-	return Node{left: &left, right: &right, value: f[:]}
+func makeNode(left, right *Node) *Node {
+	output := make([]byte, 0)
+	output = append(left.value, right.value...)
+	f := sha256.Sum256(output)
+	return &Node{left: left, right: right, value: f[:]}
 }
