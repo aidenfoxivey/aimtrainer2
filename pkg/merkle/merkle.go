@@ -20,7 +20,7 @@ type HashListNode struct {
 
 type HashList struct {
 	nodes   []HashListNode
-	topHash [32]byte
+	TopHash [32]byte
 }
 
 func HashListFromBytes(data []byte, blockSize int) (HashList, error) {
@@ -44,7 +44,7 @@ func HashListFromBytes(data []byte, blockSize int) (HashList, error) {
 		t.nodes = append(t.nodes, HashListNode{data[i:end], b})
 	}
 
-	t.topHash = sha256.Sum256(hashes)
+	t.TopHash = sha256.Sum256(hashes)
 
 	return t, nil
 }
