@@ -11,10 +11,25 @@ import (
 	"fmt"
 )
 
+// placeholder name for a node in a hashlist
+// idk how long it should be
+type HashListNode struct {
+	data []byte
+	hash [32]byte
+}
+
+type HashList struct {
+	nodes   []HashListNode
+	topHash [32]byte
+}
+
+func HashListFromBytes(data []byte, blockSize int) (HashList, error) {
+	return HashList{}, nil
+}
+
 type MerkleTree struct {
-	root       *Node
-	merkleRoot []byte
-	leaves     []*Node
+	root   *Node
+	leaves []*Node
 }
 
 type Node struct {
@@ -60,16 +75,14 @@ func NewMerkleTree(data []byte, blockSize int) (*Node, error) {
 
 		newNode := &Node{n1, n2, nil, sum[:]}
 
-		n1.parent = newNode;
-		n2.parent = newNode;
-		
+		n1.parent = newNode
+		n2.parent = newNode
+
 		q = append(q, newNode)
 	}
 
 	return q[0], nil
 }
-
-
 
 // -\_(*_*)_/-
 // - Alisya K.
