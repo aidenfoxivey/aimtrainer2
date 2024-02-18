@@ -24,7 +24,29 @@ type HashList struct {
 }
 
 func HashListFromBytes(data []byte, blockSize int) (HashList, error) {
-	return HashList{}, nil
+	t := HashList{}
+
+	if len(data) == 0 {
+		return t, fmt.Errorf("No data was provided.")
+	}
+
+	var hashes []byte
+
+	for i := 0; i < len(data); i += blockSize {
+		end := i + blockSize
+
+		if end > len(data) {
+			end = len(data)
+		}
+
+		b := sha256.Sum256(data[i:end])
+		hashes = append(hashes, b[:]...)
+		t.nodes = append(t.nodes, HashListNode{data[i:end], b})
+	}
+
+	t.topHash = sha256.Sum256(hashes)
+
+	return t, nil
 }
 
 type MerkleTree struct {
