@@ -134,7 +134,7 @@ func Apply(b []byte) uint32 {
 }
 
 func makeNode(left, right *Node) *Node {
-	output := make([]byte, 0)
+	var output []byte
 	output = append(left.value, right.value...)
 	f := sha256.Sum256(output)
 	return &Node{left: left, right: right, value: f[:]}
